@@ -8,6 +8,7 @@ from song_model import Song
 from song_dao import dao_get_all_songs, dao_save_song
 from db import create_tables
 from typing import List, Any, Dict, Optional
+from spotify_service import get_playlist_tracks
 
 client_id = os.environ.get('CLIENT_ID')
 client_secret = os.environ.get('CLIENT_SECRET')
@@ -44,6 +45,7 @@ if __name__ == "__main__":
             "s - search songs\n"
             "g - print all songs in the database\n"
             "q - quit\n"
+            "p - import songs from a Spotify playlist URL\n"
         )
 
         
@@ -73,3 +75,25 @@ if __name__ == "__main__":
                     print("Songs not saved")
             else:
                 print("No songs found for your query.")
+        
+
+        # inside the loop:
+        elif selection == "p":
+            playlist_url = input("Enter Spotify playlist URL (or spotify:playlist:...): ").strip()
+            songs = get_playlist_tracks(playlist_url)
+
+            if songs:
+                print(f"Tracks found: {len(songs)}")
+                for i, song in enumerate(songs[:20], start=1):
+                    print(f"{i}: {song.title} — {song.artist}")
+                if len(songs) > 20:
+                    print("... (showing first 20)")
+
+                save_choice = input("Save these songs to the database? (y/n): ").lower()
+                if save_choice == "y":
+                    dao_save_song(songs)
+                else:
+                    print("Songs not saved")
+            else:
+                print("No tracks found (or playlist parsing failed).")
+
