@@ -1,6 +1,5 @@
-__pycache__/
 .env
-downloads/
-*.mp3
-*.m4a
-*.webm
+venv/
+__pycache__/
+.cache/
+*.db
