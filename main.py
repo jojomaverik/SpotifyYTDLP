@@ -5,7 +5,7 @@ load_dotenv()
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from song_model import Song
-from song_dao import dao_get_all_songs, dao_save_song
+from song_dao import dao_get_all_songs, dao_save_song, dao_clear_songs
 from db import create_tables
 from typing import List, Any, Dict, Optional
 from spotify_service import get_playlist_tracks
@@ -44,8 +44,9 @@ if __name__ == "__main__":
             "\nEnter:\n"
             "s - search songs\n"
             "g - print all songs in the database\n"
-            "q - quit\n"
+            "c - clear database\n"
             "p - import songs from a Spotify playlist URL\n"
+            "q - quit\n"
         )
 
         
@@ -76,8 +77,13 @@ if __name__ == "__main__":
             else:
                 print("No songs found for your query.")
         
-
-        # inside the loop:
+        elif selection == "c":
+            confirm = input("This will DELETE ALL songs. Are you sure? (y/n): ").lower()
+            if confirm == "y":
+                dao_clear_songs()
+                print("Database cleared.")
+            else:
+                print("Cancelled.")
         elif selection == "p":
             playlist_url = input("Enter Spotify playlist URL (or spotify:playlist:...): ").strip()
             songs = get_playlist_tracks(playlist_url)

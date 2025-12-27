@@ -43,12 +43,16 @@ def get_playlist_tracks(playlist_input: str) -> List[Song]:
     limit = 100  # Spotify allows up to 100 per request for playlist_items
 
     while True:
-        results: Dict[str, Any] = sp.playlist_items(
+        results = sp.playlist_items(
             playlist_id,
             offset=offset,
             limit=limit,
             additional_types=("track",),
         )
+        if not results:
+            break
+
+
 
         items = results.get("items", [])
         for item in items:
