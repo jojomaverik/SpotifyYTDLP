@@ -1,4 +1,3 @@
-#search_youtube(song) -> url
 from typing import Optional
 import yt_dlp
 from song_model import Song
@@ -21,7 +20,6 @@ def search_youtube_for_song(song: Song) -> Optional[str]:
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             result = ydl.extract_info(f"ytsearch1:{query}", download=False)
-            print(f"Search results for '{query}': {result}")  # Debug print
 
         if not result:
             return None
@@ -37,7 +35,7 @@ def search_youtube_for_song(song: Song) -> Optional[str]:
         print(f"YouTube search failed for '{song.title}' by '{song.artist}': {e}")
         return None
 
-
+'''
 # Test block
 if __name__ == "__main__":
     test_song = Song(
@@ -49,5 +47,4 @@ if __name__ == "__main__":
 
     url = search_youtube_for_song(test_song)
     print("Found URL:", url)
-    
-    
+'''
