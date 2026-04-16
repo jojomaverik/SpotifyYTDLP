@@ -41,3 +41,23 @@ def dao_get_pending_download_songs() -> List[Song]:
         )
         songs = session.exec(statement).all()
         return list(songs)
+    
+def dao_update_song(updated_song: Song) -> Optional[Song]:
+    with Session(engine) as session:
+        existing_song = session.get(Song, updated_song.id)
+
+        if not existing_song:
+            return None
+
+        existing_song.title = updated_song.title
+        existing_song.artist = updated_song.artist
+        existing_song.album = updated_song.album
+        existing_song.spotify_id = updated_song.spotify_id
+        existing_song.youtube_url = updated_song.youtube_url
+        existing_song.downloaded = updated_song.downloaded
+        existing_song.file_path = updated_song.file_path
+
+        session.add(existing_song)
+        session.commit()
+        session.refresh(existing_song)
+        return existing_song
