@@ -1,22 +1,33 @@
 import os
+from typing import List, Dict, Any, Optional
+
 from dotenv import load_dotenv
-load_dotenv() 
+load_dotenv()
 
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
+
 from song_model import Song
-from song_dao import dao_get_all_songs, dao_save_song, dao_clear_songs
+from song_dao import (
+    dao_get_all_songs,
+    dao_save_song,
+    dao_clear_songs,
+    dao_get_songs_missing_youtube_url,
+)
 from db import create_tables
-from typing import List, Any, Dict, Optional
 from spotify_service import get_playlist_tracks
+from Youtube.youtube_service import resolve_youtube_urls_for_all_pending_songs
 
-client_id = os.environ.get('CLIENT_ID')
-client_secret = os.environ.get('CLIENT_SECRET')
 
-client_credentials_manager = SpotifyClientCredentials(client_id=client_id, client_secret=client_secret)
+client_id = os.environ.get("CLIENT_ID")
+client_secret = os.environ.get("CLIENT_SECRET")
+
+client_credentials_manager = SpotifyClientCredentials(
+    client_id=client_id,
+    client_secret=client_secret
+)
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
-from typing import List, Dict, Any, Optional
 
 def search_songs(query: str) -> List[Song]:
     results: Optional[Dict[str, Any]] = sp.search(query, limit=10)
@@ -36,9 +47,10 @@ def search_songs(query: str) -> List[Song]:
 
     return songs
 
+
 if __name__ == "__main__":
     create_tables()
-    
+
     while True:
         selection = input(
             "\nEnter:\n"
@@ -46,19 +58,22 @@ if __name__ == "__main__":
             "g - print all songs in the database\n"
             "c - clear database\n"
             "p - import songs from a Spotify playlist URL\n"
+            "y - find YouTube URLs for songs in database\n"
+            "m - show songs still missing YouTube URLs\n"
             "q - quit\n"
-        )
-
-        
-        selection = selection.lower()
+        ).lower()
 
         if selection == "q":
             break
+
         elif selection == "g":
             print("All songs in the database...")
             all_songs = dao_get_all_songs()
             for song in all_songs:
-                print(f"Title: {song.title}, Artist: {song.artist}, Album: {song.album}")
+                print(
+                    f"Title: {song.title}, Artist: {song.artist}, "
+                    f"Album: {song.album}, YouTube: {song.youtube_url}"
+                )
 
         elif selection == "s":
             search_query = input("Enter your search: ")
@@ -72,11 +87,12 @@ if __name__ == "__main__":
                 save_choice = input("Do you want to save these songs to the database? (y/n): ").lower()
                 if save_choice == "y":
                     dao_save_song(songs)
+                    print("Songs saved.")
                 else:
                     print("Songs not saved")
             else:
                 print("No songs found for your query.")
-        
+
         elif selection == "c":
             confirm = input("This will DELETE ALL songs. Are you sure? (y/n): ").lower()
             if confirm == "y":
@@ -84,6 +100,7 @@ if __name__ == "__main__":
                 print("Database cleared.")
             else:
                 print("Cancelled.")
+
         elif selection == "p":
             playlist_url = input("Enter Spotify playlist URL (or spotify:playlist:...): ").strip()
             songs = get_playlist_tracks(playlist_url)
@@ -98,8 +115,20 @@ if __name__ == "__main__":
                 save_choice = input("Save these songs to the database? (y/n): ").lower()
                 if save_choice == "y":
                     dao_save_song(songs)
+                    print("Songs saved.")
                 else:
                     print("Songs not saved")
             else:
                 print("No tracks found (or playlist parsing failed).")
 
+        elif selection == "y":
+            resolve_youtube_urls_for_all_pending_songs()
+
+        elif selection == "m":
+            songs = dao_get_songs_missing_youtube_url()
+            if songs:
+                print(f"Songs still missing YouTube URLs: {len(songs)}")
+                for song in songs:
+                    print(f"{song.title} — {song.artist}")
+            else:
+                print("All songs already have YouTube URLs.")
