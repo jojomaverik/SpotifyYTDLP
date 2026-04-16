@@ -13,10 +13,14 @@ from song_dao import (
     dao_save_song,
     dao_clear_songs,
     dao_get_songs_missing_youtube_url,
+    dao_get_pending_download_songs,
 )
 from db import create_tables
 from spotify_service import get_playlist_tracks
-from Youtube.youtube_service import resolve_youtube_urls_for_all_pending_songs
+from Youtube.youtube_service import (
+    resolve_youtube_urls_for_all_pending_songs,
+    download_all_pending_songs,
+)
 
 
 client_id = os.environ.get("CLIENT_ID")
@@ -60,6 +64,8 @@ if __name__ == "__main__":
             "p - import songs from a Spotify playlist URL\n"
             "y - find YouTube URLs for songs in database\n"
             "m - show songs still missing YouTube URLs\n"
+            "d - download songs that already have YouTube URLs\n"
+            "r - show songs waiting to be downloaded\n"
             "q - quit\n"
         ).lower()
 
@@ -71,8 +77,8 @@ if __name__ == "__main__":
             all_songs = dao_get_all_songs()
             for song in all_songs:
                 print(
-                    f"Title: {song.title}, Artist: {song.artist}, "
-                    f"Album: {song.album}, YouTube: {song.youtube_url}"
+                    f"Title: {song.title}, Artist: {song.artist}, Album: {song.album}, "
+                    f"YouTube: {song.youtube_url}, Downloaded: {song.downloaded}, File: {song.file_path}"
                 )
 
         elif selection == "s":
@@ -132,3 +138,18 @@ if __name__ == "__main__":
                     print(f"{song.title} — {song.artist}")
             else:
                 print("All songs already have YouTube URLs.")
+
+        elif selection == "d":
+            audio_format = input("Choose format (mp3/flac) [mp3]: ").strip().lower()
+            if audio_format not in ("mp3", "flac"):
+                audio_format = "mp3"
+            download_all_pending_songs(audio_format=audio_format)
+
+        elif selection == "r":
+            songs = dao_get_pending_download_songs()
+            if songs:
+                print(f"Songs waiting to be downloaded: {len(songs)}")
+                for song in songs:
+                    print(f"{song.title} — {song.artist} — {song.youtube_url}")
+            else:
+                print("No songs are waiting for download.")
