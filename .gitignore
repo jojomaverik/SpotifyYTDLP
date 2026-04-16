@@ -1,5 +1,6 @@
 .env
-venv/
-__pycache__/
+.cache
 songs.db
-.cache/
+downloads/
+__pycache__/
+*.pyc
