@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from sqlmodel import Session, select, delete
 from song_model import Song
 from db import engine
