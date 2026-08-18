@@ -1,3 +1,7 @@
+# python -m venv venv
+# venv\Scripts\activate
+# pip install -r requirements.txt
+# python main.py
 import os
 from typing import List, Dict, Any, Optional
 
@@ -138,7 +142,7 @@ if __name__ == "__main__":
                     print(f"{song.title} — {song.artist}")
             else:
                 print("All songs already have YouTube URLs.")
-
+        
         elif selection == "d":
             audio_format = input("Choose format (mp3/flac) [mp3]: ").strip().lower()
             if audio_format not in ("mp3", "flac"):
